@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi Language Parser</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: white;
+}
+
+.header {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    padding: 15px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+.editor-section, .output-section {
+    width: 50%;
+    padding: 15px;
+}
+
+.CodeMirror {
+    height: 70vh;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background: #2563eb;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.output-box {
+    background: black;
+    color: #00ff88;
+    padding: 15px;
+    height: 70vh;
+    overflow-y: auto;
+    font-family: monospace;
+    white-space: pre;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">🚀 Multi Language Parser</div>
+
+<div class="container">
+
+<div class="editor-section">
+    <h3>💻 Code Editor</h3>
+    <textarea id="code"></textarea>
+    <button onclick="runCode()">▶ Run Code</button>
+</div>
+
+<div class="output-section">
+    <h3>📊 Output</h3>
+    <div class="output-box" id="output">Waiting...</div>
+</div>
+
+</div>
+
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    mode: "text/x-csrc",
+    lineNumbers: true
+});
+
+editor.setValue(`int a;
+a = b + c;
+`);
+
+function runCode() {
+    let code = editor.getValue();
+    let output = document.getElementById("output");
+
+    output.textContent = "Detecting language...";
+
+    fetch("/run", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ code: code })
+    })
+    .then(res => res.text())
+    .then(data => {
+        output.textContent = data;
+    })
+    .catch(err => {
+        output.textContent = "Error:\n" + err;
+    });
+}
+</script>
+
+</body>
+</html>
