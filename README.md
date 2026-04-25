@@ -1,4 +1,4 @@
-# Multi-Language Compiler using C Language
+# Multi-Language Lexical Analyzer and Parser
 > A compiler front-end tool that accepts source code, automatically identifies the programming language, tokenizes the input, constructs a symbol table, and renders parse trees — served through a live web dashboard.
 
 ---
