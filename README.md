@@ -14,51 +14,113 @@ The system supports four languages — **C, C++, Java, and Python** — each han
 ## Architecture
 
 ```
-+---------------------------+
-|      dashboard.html       |
-|   CodeMirror Code Editor  |
-|   POST /run  (JSON)       |
-+------------+--------------+
-             |
-             v
-+---------------------------+
-|         app.py            |
-|   Flask Web Server        |
-|                           |
-|  1. detect_language()     |
-|     Scans code for known  |
-|     patterns per language |
-|                           |
-|  2. Maps language to      |
-|     parser executable     |
-|                           |
-|  3. subprocess.Popen()    |
-|     Pipes code via stdin  |
-+------------+--------------+
-             |
-     +-------+--------+
-     |                |
-     v                v
-+---------+      +-----------+
-| parser  |      | parser_   |
-| .exe    |      | cpp.exe   |  ...and parser_java.exe
-| (C)     |      | (C++)     |      parser_python.exe
-+---------+      +-----------+
-     |
-     v
-+---------------------------+
-|    Parser Output          |
-|  - Token list             |
-|  - Symbol table           |
-|  - Parse tree(s)          |
-+---------------------------+
-             |
-             v
-+---------------------------+
-|   Browser Output Panel    |
-|   Monospace terminal view |
-+---------------------------+
-```
++----------------------------------+
+|        dashboard.html            |
+|----------------------------------|
+|  CodeMirror Code Editor          |
+|  User writes code                |
+|                                  |
+|  Click "Run Code"                |
+|                                  |
+|  fetch("/run")                   |
+|  Sends code as JSON to Flask     |
++----------------+-----------------+
+                 |
+                 v
+
++----------------------------------+
+|             app.py               |
+|----------------------------------|
+| Flask Backend Server             |
+|                                  |
+| 1. detect_language()             |
+|    Detects:                      |
+|    - C                           |
+|    - C++                         |
+|    - Java                        |
+|    - Python                      |
+|                                  |
+| 2. Maps language to:             |
+|    a) Error Checker executable   |
+|    b) Lexical Parser executable  |
+|                                  |
+| 3. subprocess.Popen()            |
+|    Sends code to Error Checker   |
++----------------+-----------------+
+                 |
+                 v
+
++----------------------------------+
+|     Language Error Checker       |
+|----------------------------------|
+| error_c.exe                      |
+| error_cpp.exe                    |
+| error_java.exe                   |
+| error_python.exe                 |
+|                                  |
+| Performs:                        |
+| - Lexical error detection        |
+| - Syntax error detection         |
+| - Semantic error detection       |
+|                                  |
+| Checks for:                      |
+| - invalid identifiers            |
+| - missing semicolons             |
+| - undeclared variables           |
+| - type mismatch                  |
+| - invalid operations             |
+| - missing colons (Python)        |
++----------------+-----------------+
+                 |
+        +--------+--------+
+        |                 |
+        | Errors Found?   |
+        |                 |
+   YES  v                 v NO
+
++-------------------+   +--------------------------+
+| Return Errors     |   | Call Lexical Parser      |
+| to Flask          |   | executable               |
++-------------------+   +------------+-------------+
+                                     |
+                                     v
+
++----------------------------------+
+|     Language Lexical Parser      |
+|----------------------------------|
+| lexical_parser.exe   (C)         |
+| parser_cpp.exe       (C++)       |
+| parser_java.exe      (Java)      |
+| parser_python.exe    (Python)    |
+|                                  |
+| Generates:                       |
+| - Token List                     |
+| - Symbol Table                   |
+| - Parse Trees                    |
++----------------+-----------------+
+                 |
+                 v
+
++----------------------------------+
+|         app.py (Flask)           |
+|----------------------------------|
+| Returns final output to frontend |
++----------------+-----------------+
+                 |
+                 v
+
++----------------------------------+
+|      Browser Output Panel        |
+|----------------------------------|
+| Terminal-style output box        |
+|                                  |
+| Shows either:                    |
+| - Compilation errors             |
+| OR                               |
+| - Tokens                         |
+| - Symbol Table                   |
+| - Parse Tree                     |
++----------------------------------+
 
 ---
 
@@ -132,25 +194,79 @@ Multiple assignments in a single input produce multiple numbered parse trees.
 ## Project Files
 
 ```
-lexical_analyzer/
-|
-|-- app.py                      Flask server: language detection, subprocess routing
-|-- dashboard.html              Browser UI: CodeMirror editor + output panel
-|
-|-- lexical_parser.c            Parser source — C language
-|-- lexical_parser_cpp.c        Parser source — C++ language
-|-- lexical_parser_java.c       Parser source — Java language
-|-- lexical_parser_python.c     Parser source — Python language
-|
-|-- parser.exe                  Compiled parser — C           (Windows)
-|-- parser_cpp.exe              Compiled parser — C++         (Windows)
-|-- parser_java.exe             Compiled parser — Java        (Windows)
-|-- parser_python.exe           Compiled parser — Python      (Windows)
-|
-|-- lexical_parser.exe          Extended parser — C           (Windows)
-|-- lexical_parser_cpp.exe      Extended parser — C++         (Windows)
-|-- lexical_parser_java.exe     Extended parser — Java        (Windows)
-|-- lexical_parser_python.exe   Extended parser — Python      (Windows)
+multi_language_parser/
+│
+├── app.py
+│   Flask backend
+│   - Detects language
+│   - Calls error checker
+│   - If no errors → calls parser
+│   - Sends output to frontend
+│
+├── dashboard.html
+│   Frontend UI
+│   - CodeMirror editor
+│   - Run Code button
+│   - Output panel
+│
+│
+├── ERROR CHECKERS (Source Files)
+│
+├── error_c.c
+│   Detects C errors
+│
+├── error_cpp.c
+│   Detects C++ errors
+│
+├── error_java.c
+│   Detects Java errors
+│
+├── error_python.c
+│   Detects Python errors
+│
+│
+├── ERROR CHECKERS (Executables)
+│
+├── error_c.exe
+├── error_cpp.exe
+├── error_java.exe
+├── error_python.exe
+│
+│
+├── LEXICAL PARSERS (Source Files)
+│
+├── lexical_parser.c
+│   C parser source
+│
+├── lexical_parser_cpp.c
+│   C++ parser source
+│
+├── lexical_parser_java.c
+│   Java parser source
+│
+├── lexical_parser_python.c
+│   Python parser source
+│
+│
+├── PARSER EXECUTABLES
+│
+├── lexical_parser.exe
+│   C parser executable
+│
+├── parser_cpp.exe
+│   C++ parser executable
+│
+├── parser_java.exe
+│   Java parser executable
+│
+├── parser_python.exe
+│   Python parser executable
+│
+│
+└── static/ (optional future folder)
+    ├── css/
+    ├── js/
+    └── assets/
 ```
 
 ---
