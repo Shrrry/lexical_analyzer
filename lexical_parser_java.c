@@ -27,7 +27,6 @@ struct Node {
 
 void printTree(struct Node* root, int depth);
 
-// ---------- KEYWORDS ----------
 char *keywords[] = {"int","float","char","if","else","while","for","return","void"};
 
 int isKeyword(char *str){
@@ -165,10 +164,18 @@ int main(){
     for(int i=0;i<tokenCount;i++)
         printf("%s -> %s\n",tokens[i].value,tokens[i].type);
 
-    printf("\n----- SYMBOL TABLE -----\n");
-    printf("Index\tName\tType\n");
-    for(int i=0;i<symIndex;i++)
-        printf("%d\t%s\t%s\n",i+1,table[i].name,table[i].type);
+   printf("\n=========== SYMBOL TABLE ===========\n\n");
+printf("%-8s %-20s %-15s\n", "Index", "Name", "Type");
+printf("------------------------------------------------\n");
+
+for(int i = 0; i < symIndex; i++) {
+    printf("%-8d %-20s %-15s\n",
+           i + 1,
+           table[i].name,
+           table[i].type);
+}
+
+printf("====================================\n");
 
     parseAll();
 

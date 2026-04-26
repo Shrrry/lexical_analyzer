@@ -5,7 +5,6 @@
 
 #define MAX 200
 
-// ---------------- STRUCTS ----------------
 struct Token {
     char type[20];
     char value[50];
@@ -24,14 +23,12 @@ struct Node {
 // ✅ FUNCTION DECLARATIONS (IMPORTANT FIX)
 void printTree(struct Node* root, int depth);
 
-// ---------------- GLOBALS ----------------
 struct Token tokens[MAX];
 int tokenCount = 0;
 
 struct Symbol symtab[MAX];
 int symCount = 0;
 
-// ---------------- NODE ----------------
 struct Node* newNode(char *val) {
     struct Node* n = (struct Node*)malloc(sizeof(struct Node));
     strcpy(n->value, val);
@@ -39,7 +36,6 @@ struct Node* newNode(char *val) {
     return n;
 }
 
-// ---------------- KEYWORDS ----------------
 char *keywords[] = {
     "int","float","char","if","else","while","for","return","void"
 };
@@ -51,14 +47,12 @@ int isKeyword(char *str) {
     return 0;
 }
 
-// ---------------- TOKEN ----------------
 void addToken(char *type, char *value) {
     strcpy(tokens[tokenCount].type, type);
     strcpy(tokens[tokenCount].value, value);
     tokenCount++;
 }
 
-// ---------------- SYMBOL TABLE ----------------
 void addSymbol(char *name, char *type) {
     for(int i=0;i<symCount;i++)
         if(strcmp(symtab[i].name,name)==0) return;
@@ -68,7 +62,6 @@ void addSymbol(char *name, char *type) {
     symCount++;
 }
 
-// ---------------- LEXER ----------------
 void tokenize(char *input) {
     int i=0;
     char buffer[50];
@@ -117,7 +110,6 @@ void tokenize(char *input) {
     }
 }
 
-// ---------------- EXPRESSION ----------------
 struct Node* buildExpression(int start, int end) {
     if (start > end) return NULL;
 
@@ -138,7 +130,6 @@ struct Node* buildExpression(int start, int end) {
     return newNode(tokens[start].value);
 }
 
-// ---------------- PARSE MULTIPLE ----------------
 void parseAll() {
     int i = 0;
     int treeNum = 1;
@@ -168,7 +159,6 @@ void parseAll() {
     }
 }
 
-// ---------------- TREE PRINT ----------------
 void printTree(struct Node* root, int depth) {
     if (root == NULL) return;
 
@@ -181,7 +171,6 @@ void printTree(struct Node* root, int depth) {
     printTree(root->right, depth + 1);
 }
 
-// ---------------- MAIN ----------------
 int main() {
 
     setbuf(stdout, NULL);
@@ -201,10 +190,18 @@ int main() {
     for(int i=0;i<tokenCount;i++)
         printf("%s -> %s\n", tokens[i].value, tokens[i].type);
 
-    printf("\n----- SYMBOL TABLE -----\n");
-    printf("Index\tName\tType\n");
-    for(int i=0;i<symCount;i++)
-        printf("%d\t%s\t%s\n", i+1, symtab[i].name, symtab[i].type);
+   printf("\n=========== SYMBOL TABLE ===========\n\n");
+printf("%-8s %-20s %-15s\n", "Index", "Name", "Type");
+printf("------------------------------------------------\n");
+
+for(int i=0; i<symCount; i++) {
+    printf("%-8d %-20s %-15s\n",
+           i + 1,
+           symtab[i].name,
+           symtab[i].type);
+}
+
+printf("====================================\n");
 
     parseAll();
 
